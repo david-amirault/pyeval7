@@ -55,6 +55,54 @@ cdef unsigned long long deal_card(unsigned long long dead):
             return card
 
 
+cdef float hand_vs_rand_monte_carlo(unsigned long long hand, 
+        unsigned long long start_board, 
+        int num_board, 
+        int iterations):
+    """
+    Return equity of hand vs random hand.
+    Note that only heads-up evaluations are supported.
+    
+    hand is a two-card hand mask
+    board is a hand mask of the board; num_board says how many cards are in it
+    """
+    cdef unsigned int count = 0
+    cdef unsigned long long option
+    cdef unsigned long long dealt
+    cdef unsigned int hero
+    cdef unsigned int villain
+    cdef unsigned long long board
+    for 0 <= i < iterations:
+        # deal the rest of the board
+        board = start_board
+        for j in range(5 - num_board):
+            dealt = board | hand
+            board |= deal_card(dealt)
+        # choose an option for opponent's hand
+        option = deal_card(dealt)
+        option |= deal_card(option | dealt)
+        hero = cy_evaluate(dealt, 7)
+        villain = cy_evaluate(board | option, 7)
+        if hero > villain:
+            count += 2
+        elif hero == villain:
+            count += 1
+    return 0.5 * <double>count / <double>iterations
+
+
+def py_hand_vs_rand_monte_carlo(py_hand, py_board, 
+        py_iterations):
+    cdef unsigned long long hand = cards_to_mask(py_hand)
+    cdef unsigned long long start_board = cards_to_mask(py_board)
+    cdef int num_board = len(py_board)
+    cdef int iterations = py_iterations
+    cdef float equity  # DuplicatedSignature
+    cdef unsigned long long mask
+    equity = hand_vs_rand_monte_carlo(hand, 
+            start_board, num_board, iterations)
+    return equity
+
+
 cdef float hand_vs_range_monte_carlo(unsigned long long hand, 
         unsigned long long *options, 
         int num_options, 
