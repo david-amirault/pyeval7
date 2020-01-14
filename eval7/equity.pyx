@@ -79,6 +79,7 @@ cdef float hand_vs_rand_monte_carlo(unsigned long long hand,
             dealt = board | hand
             board |= deal_card(dealt)
         # choose an option for opponent's hand
+        dealt = board | hand
         option = deal_card(dealt)
         option |= deal_card(option | dealt)
         hero = cy_evaluate(dealt, 7)
