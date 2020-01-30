@@ -98,7 +98,6 @@ def py_hand_vs_rand_monte_carlo(py_hand, py_board,
     cdef unsigned int num_board = len(py_board)
     cdef unsigned int iterations = py_iterations
     cdef float equity  # DuplicatedSignature
-    cdef unsigned long long mask
     equity = hand_vs_rand_monte_carlo(hand, 
             start_board, num_board, iterations)
     return equity
